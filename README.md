@@ -18,7 +18,13 @@
 6. 其它可通过知乎、csdn、Google查找。
 
 ### 多智能体
+
 1. [多智能体综述](https://cloud.tencent.com/developer/article/1618396)
 2. [多智能体文档](https://marl-doc.readthedocs.io/en/latest/paper/)
 3. [多智能体课程-UCL汪军老师](https://space.bilibili.com/604515161/channel/seriesdetail?sid=222479)
+
+### 博弈论
+
+1. [Martin J.个人网址](https://www.economics.utoronto.ca/osborne/)
+2. 
 
