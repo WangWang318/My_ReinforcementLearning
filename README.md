@@ -22,9 +22,10 @@
 1. [多智能体综述](https://cloud.tencent.com/developer/article/1618396)
 2. [多智能体文档](https://marl-doc.readthedocs.io/en/latest/paper/)
 3. [多智能体课程-UCL汪军老师](https://space.bilibili.com/604515161/channel/seriesdetail?sid=222479)
-
+4. [多智能体文章](https://github.com/TimeBreaker/Multi-Agent-Reinforcement-Learning-papers#reviews)
 ### 博弈论
 
 1. [Martin J.个人网址](https://www.economics.utoronto.ca/osborne/)
-2. 
+2. [Martin J. Introduction to Game Theory](https://www.economics.utoronto.ca/osborne/igt/index.html)
+3. 
 
