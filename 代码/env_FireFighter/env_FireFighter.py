@@ -49,7 +49,6 @@ class EnvFireFighter(object):
 
         target_list = mixed_strategy.argmax(axis=1)
         # target_list (n, 1)
-        print(target_list)
         # 交互
         self.step_2(target_list)
         # 更新策略
@@ -67,28 +66,15 @@ class EnvFireFighter(object):
                 if self.is_neighbour_on_fire(i):
                     num, pos = self.how_many_fighters(i, target_list)
                     if num == 0:
-                        if random.random() < 0.8:
+                        if random.random() < 0.95:
                             self.firelevel[i] = self.firelevel[i] + 1
                             # 着火扣分
-                            if i == 0:
-                                self.fighter_reward[i] += self.my_penalty
-                            elif i == self.house_num - 1:
-                                self.fighter_reward[i - 1] += self.my_penalty
-                            else:
-                                self.fighter_reward[i] += self.my_penalty
-                                self.fighter_reward[i - 1] += self.my_penalty
+                            self.reward_penalty(num, i, pos)
 
                     elif num == 1:
-                        if random.random() < 0.8:
+                        if random.random() < 0.4:
                             self.firelevel[i] = self.firelevel[i] + 1
-                            # 着火扣分 扑火的扣的少，没扑火的扣得多
-                            # 两头的消防员不扣分
-
-                            # 中间的消防员
-                            if i != 0 and i != self.house_num - 1:
-                                self.fighter_reward[i + pos] += self.my_penalty * 0.2
-                                tmp = 0 if pos == -1 else -1
-                                self.fighter_reward[i + tmp] += self.my_penalty * 1.0
+                            self.reward_penalty(num, i, pos)
 
                         if random.random() < 0.6:
                             self.firelevel[i] = self.firelevel[i] - 1
@@ -96,32 +82,20 @@ class EnvFireFighter(object):
                             self.fighter_reward[i + pos] += self.my_reward
                     else:
                         self.firelevel[i] = 0
-                        # 左右智能体添加reward
-                        self.fighter_reward[i - 1] += self.my_reward  # 左
-                        self.fighter_reward[i] += self.my_reward     # 右
+                        self.reward_penalty(num, i, pos)
 
                 else:
                     num, pos = self.how_many_fighters(i, target_list)
                     if num == 0:
+                        self.reward_penalty(num, i, pos)
                         if random.random() < 0.4:
                             self.firelevel[i] = self.firelevel[i] + 1
-                            # 着火扣分
-                            if i == 0:
-                                self.fighter_reward[i] += self.my_penalty
-                            elif i == self.house_num - 1:
-                                self.fighter_reward[i - 1] += self.my_penalty
-                            else:
-                                self.fighter_reward[i] += self.my_penalty
-                                self.fighter_reward[i - 1] += self.my_penalty
+                            #self.reward_penalty(num, i, pos)
 
                     elif num == 1:
-                        if random.random() < 0.4:
+                        if random.random() < 0.2:
                             self.firelevel[i] = self.firelevel[i] + 1
-                            # 中间的消防员
-                            if i != 0 and i != self.house_num - 1:
-                                self.fighter_reward[i + pos] += self.my_penalty * 0.2
-                                tmp = 0 if pos == -1 else -1
-                                self.fighter_reward[i + tmp] += self.my_penalty * 1.0
+                            self.reward_penalty(num, i, pos)
 
                         self.firelevel[i] = self.firelevel[i] - 1
                         # pos添加reward
@@ -129,9 +103,7 @@ class EnvFireFighter(object):
 
                     else:
                         self.firelevel[i] = 0
-                        # 左右智能体添加reward
-                        self.fighter_reward[i - 1] += self.my_reward  # 左
-                        self.fighter_reward[i] += self.my_reward  # 右
+                        self.reward_penalty(num, i, pos)
 
             else:   # no fire
                 if self.is_neighbour_on_fire(i):
@@ -139,31 +111,19 @@ class EnvFireFighter(object):
                     if num == 0:
                         if random.random() < 0.8:
                             self.firelevel[i] = self.firelevel[i] + 1
-                            # 着火扣分
-                            if i == 0:
-                                self.fighter_reward[i] += self.my_penalty
-                            elif i == self.house_num - 1:
-                                self.fighter_reward[i - 1] += self.my_penalty
-                            else:
-                                self.fighter_reward[i] += self.my_penalty
-                                self.fighter_reward[i - 1] += self.my_penalty
+                            #self.reward_penalty(num, i, pos)
                     elif num == 1:
                         if random.random() < 0.8:
                             self.firelevel[i] = self.firelevel[i] + 1
-                            # 中间的消防员
-                            if i != 0 and i != self.house_num - 1:
-                                self.fighter_reward[i + pos] += self.my_penalty * 0.2
-                                tmp = 0 if pos == -1 else -1
-                                self.fighter_reward[i + tmp] += self.my_penalty * 1.0
+                            #self.reward_penalty(num, i, pos)
 
                         if random.random() < 0.6:
                             self.firelevel[i] = self.firelevel[i] - 1
-                            #
+                            # pos添加reward
+                            #self.fighter_reward[i + pos] += self.my_reward
                     else:
                         self.firelevel[i] = 0
-                        # 左右智能体添加reward
-                        self.fighter_reward[i - 1] += self.my_reward  # 左
-                        self.fighter_reward[i] += self.my_reward  # 右
+                        #self.reward_penalty(num, i, pos)
                 else:
                     num, pos = self.how_many_fighters(i, target_list)
                     if num == 0:
@@ -236,8 +196,6 @@ class EnvFireFighter(object):
     def get_all_reward(self):
         return self.fighter_reward
 
-
-
     def update_dynamics(self, mixed_strategy, alpha=0.05):
         dx = np.zeros_like(mixed_strategy)
 
@@ -254,15 +212,27 @@ class EnvFireFighter(object):
         for i in range(self.fighter_num):
             if i == 0:
                 if self.fighter_reward[0] < average_reward[i]:  # 小于平均收益
-                    # 与右侧的fighter合作
-                    dx[i][0] += -1 * alpha*(average_reward[i] - self.fighter_reward[0])
-                    dx[i][1] += alpha*(average_reward[i] - self.fighter_reward[0])
+                    if self.firelevel[1] != 0:
+                        # 与右侧的fighter合作
+                        dx[i][0] += -1 * alpha*(average_reward[i] - self.fighter_reward[0])
+                        dx[i][1] += alpha*(average_reward[i] - self.fighter_reward[0])
+
+                    else:
+                        # 扑灭最左侧的火
+                        dx[i][0] += 2
+                        dx[i][1] += -2
 
             elif i == self.fighter_num - 1:
                 if self.fighter_reward[i] < average_reward[i]:
-                    # 与左侧的fighter合作
-                    dx[i][0] += alpha * (average_reward[i] - self.fighter_reward[i])
-                    dx[i][1] += -1 * alpha * (average_reward[i] - self.fighter_reward[i])
+                    if self.firelevel[i] != 0:
+                        # 与左侧的fighter合作
+                        dx[i][0] += alpha * (average_reward[i] - self.fighter_reward[i])
+                        dx[i][1] += -1 * alpha * (average_reward[i] - self.fighter_reward[i])
+                    else:
+                        # 扑灭最右侧的火
+                        dx[i][0] += -2
+                        dx[i][1] += 2
+
             else:
                 if self.fighter_reward[i] < average_reward[i]:
                     tmp_idx = np.argmax((self.fighter_reward[i - 1], self.fighter_reward[i + 1]))
@@ -270,10 +240,47 @@ class EnvFireFighter(object):
                     dx[i][tmp_idx] = alpha * (average_reward[i] - self.fighter_reward[i])
                     dx[i][else_idx] = -1 * alpha * (average_reward[i] - self.fighter_reward[i])
 
+                    if mixed_strategy[i][0] < 0.1 or mixed_strategy[i][0] > 0.9:
+                        if random.random() < 0.1:
+                            # swtich
+                            dx[i][tmp_idx] += -0.6
+                            dx[i][else_idx] += 0.6
+
 
         mixed_strategy += dx
 
         mixed_strategy[mixed_strategy > 1] = 1
         mixed_strategy[mixed_strategy < 0] = 0
+        # print("mixed_strategy[0]: ", mixed_strategy[0])
 
         return mixed_strategy
+
+    def reward_penalty(self, num, i, pos=-1):
+        if num == 0:
+            # 着火扣分
+            if i == 0:
+                self.fighter_reward[i] += self.my_penalty*2.0
+                # print("fighter_reward[0]: ", self.fighter_reward[0])
+            elif i == self.house_num - 1:
+                self.fighter_reward[i - 1] += self.my_penalty*2.0
+            else:
+                self.fighter_reward[i] += self.my_penalty
+                self.fighter_reward[i - 1] += self.my_penalty
+        elif num == 1:
+            # 着火扣分 扑火的扣的少，没扑火的扣得多
+            # 两头的消防员扣分
+            # if i == 0:
+            #     self.fighter_reward[i] += self.my_penalty * 0.5
+            # elif i == self.house_num - 1:
+            #     self.fighter_reward[i - 1] += self.my_penalty * 0.5
+
+            # 中间的消防员
+            if i != 0 and i != self.house_num - 1:
+                self.fighter_reward[i + pos] += self.my_penalty * 1.0
+                tmp = 0 if pos == -1 else -1
+                self.fighter_reward[i + tmp] += self.my_penalty * 1.0
+
+        else:
+            # 左右智能体添加reward
+            self.fighter_reward[i - 1] += self.my_reward  # 左
+            self.fighter_reward[i] += self.my_reward  # 右
