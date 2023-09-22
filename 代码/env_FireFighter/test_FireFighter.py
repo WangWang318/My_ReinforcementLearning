@@ -27,18 +27,20 @@ def generate_tgt_list(agt_num):
 
 house_num = 5
 
-env = EnvFireFighter(house_num, my_penalty=-1.0, my_reward=1.0)
-
-max_iter = 10
+env = EnvFireFighter(house_num, my_penalty=-1.0, my_reward=2.0)
+mixed_strategy = generate_tgt_list(house_num - 1)
+max_iter = 1000
 for i in range(max_iter):
-    print("iter= ", i)
-    print("actual fire level: ", env.firelevel)
-    print("observed fire level: ", env.get_obs())
-    tgt_list = generate_tgt_list(house_num - 1)
-    print("agent target: ", tgt_list)
-    mixed_strategy, reward, firelevel = env.step_1(tgt_list)
+    # print("iter= ", i)
+    # print("actual fire level: ", env.firelevel)
+    # # print("observed fire level: ", env.get_obs())
+    # print("agent target: ", mixed_strategy)
+    mixed_strategy, agent_reward, global_reward, firelevel = env.step_1(mixed_strategy)
 
-    print("all_reward: ", reward)
-    print("new strategy: ", mixed_strategy)
-    print("fire_level: ", firelevel)
-    print(" ")
+    if (i+1)%100 == 0:
+        print("iter= ", i + 1)
+        print("all_agent_reward: ", agent_reward)
+        print("new strategy: ", mixed_strategy)
+        print("fire_level: ", firelevel)
+        print("global reward", global_reward)
+        print(" ")
